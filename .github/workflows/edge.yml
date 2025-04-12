@@ -85,8 +85,8 @@ jobs:
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
           tags: |
-            ghcr.io/kagemomiji/airsonic-advanced:latest
-            ghcr.io/kagemomiji/airsonic-advanced:edge-latest
-            ghcr.io/kagemomiji/airsonic-advanced:edge-${{ steps.tagcalc.outputs.tag }}
-            ghcr.io/kagemomiji/airsonic-advanced:gitcommit-${{ github.sha }}
-            ghcr.io/kagemomiji/airsonic-advanced:gitrun-${{ github.run_id }}
+            ghcr.io/UVJkiNTQ/airsonic-advanced:latest
+            ghcr.io/UVJkiNTQ/airsonic-advanced:edge-latest
+            ghcr.io/UVJkiNTQ/airsonic-advanced:edge-${{ steps.tagcalc.outputs.tag }}
+            ghcr.io/UVJkiNTQ/airsonic-advanced:gitcommit-${{ github.sha }}
+            ghcr.io/UVJkiNTQ/airsonic-advanced:gitrun-${{ github.run_id }}
