@@ -32,6 +32,7 @@ import org.airsonic.player.repository.TranscodingRepository;
 import org.airsonic.player.service.websocket.AsyncWebSocketClient;
 import org.airsonic.player.util.StringUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -214,7 +215,7 @@ public class PlayerService {
             player.setUsername(username);
             isUpdate = true;
         }
-        if (!StringUtils.equals(remoteAddress, player.getIpAddress()) &&
+        if (!Strings.CS.equals(remoteAddress, player.getIpAddress()) &&
                 (player.getIpAddress() == null || isStreamRequest || (!isPlayerConnected(player) && player.getDynamicIp()))) {
             player.setIpAddress(remoteAddress);
             isUpdate = true;
@@ -418,7 +419,6 @@ public class PlayerService {
 
         // Set default transcodings.
         List<Transcoding> defaultActiveTranscodings = transcodingRepository.findByDefaultActiveTrue();
-        player.setTranscodings(defaultActiveTranscodings);
 
         // Save player.
         Player saved = playerRepository.save(player);
@@ -442,6 +442,8 @@ public class PlayerService {
             saved = playerRepository.save(clone);
             playerRepository.delete(player);
         }
+        saved.setTranscodings(defaultActiveTranscodings);
+        playerRepository.save(saved);
 
         // Add player to playlist map.
         addPlaylist(saved);

@@ -19,13 +19,14 @@
  */
 package org.airsonic.player.domain;
 
+import org.airsonic.player.domain.dto.GitHubAsset;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Represents the version number of Airsonic.
@@ -40,7 +41,7 @@ public class Version implements Comparable<Version> {
     private String url;
     private Instant publishDate;
     private Instant releaseCreateDate;
-    private List<Map<String,Object>> artifacts;
+    private List<GitHubAsset> artifacts;
 
     /**
      * Creates a new version instance by parsing the given string.
@@ -51,7 +52,7 @@ public class Version implements Comparable<Version> {
     }
 
     public Version(String version, String commit, Boolean preview, String url,
-            Instant publishDate, Instant releaseCreateDate, List<Map<String, Object>> artifacts) {
+            Instant publishDate, Instant releaseCreateDate, List<GitHubAsset> artifacts) {
         this(version);
         this.commit = commit;
         this.preview = preview;
@@ -118,7 +119,7 @@ public class Version implements Comparable<Version> {
         return releaseCreateDate;
     }
 
-    public List<Map<String, Object>> getArtifacts() {
+    public List<GitHubAsset> getArtifacts() {
         return artifacts;
     }
 
@@ -134,6 +135,6 @@ public class Version implements Comparable<Version> {
 
     public boolean isPreview() {
         return StringUtils.isNotBlank(internalVersion.getQualifier()) &&
-                !StringUtils.equalsIgnoreCase(internalVersion.getQualifier(), Artifact.RELEASE_VERSION);
+                !Strings.CI.equals(internalVersion.getQualifier(), Artifact.RELEASE_VERSION);
     }
 }

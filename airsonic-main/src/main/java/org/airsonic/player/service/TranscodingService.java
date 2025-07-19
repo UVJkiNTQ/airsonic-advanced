@@ -29,6 +29,7 @@ import org.airsonic.player.repository.TranscodingRepository;
 import org.airsonic.player.util.StringUtil;
 import org.airsonic.player.util.Util;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -126,10 +127,10 @@ public class TranscodingService {
     @Transactional
     public void createTranscoding(Transcoding transcoding) {
         // Activate this transcoding for all players?
-        transcodingRepository.save(transcoding);
+        Transcoding saved = transcodingRepository.saveAndFlush(transcoding);
         if (transcoding.isDefaultActive()) {
             List<Player> players = playerRepository.findAll();
-            players.forEach(player -> player.addTranscoding(transcoding));
+            players.forEach(player -> player.getTranscodings().add(saved));
             playerRepository.saveAll(players);
         }
     }
@@ -141,7 +142,18 @@ public class TranscodingService {
      */
     @Transactional
     public void deleteTranscoding(Integer id) {
-        transcodingRepository.deleteById(id);
+        transcodingRepository.findById(id).ifPresentOrElse(transcoding -> {
+            // Remove this transcoding from all players
+            List<Player> players = playerRepository.findByTranscodingsContaining(transcoding);
+            players.forEach(player -> {
+                player.getTranscodings().remove(transcoding);
+            });
+            playerRepository.saveAll(players);
+            transcodingRepository.delete(transcoding);
+        }, () -> {
+                LOG.warn("Transcoding with id {} not found", id);
+            }
+        );
     }
 
     /**
@@ -374,7 +386,7 @@ public class TranscodingService {
         Path path = mediaFile.getFullPath().toAbsolutePath();
         String pathString = path.toString();
         Path tmpFile = null;
-        if (Util.isWindows() && !mediaFile.isVideo() && !StringUtils.isAsciiPrintable(path.toString()) && StringUtils.contains(command, "%s")) {
+        if (Util.isWindows() && !mediaFile.isVideo() && !StringUtils.isAsciiPrintable(path.toString()) && Strings.CS.contains(command, "%s")) {
             tmpFile = Files.createTempFile("airsonic", "." + MoreFiles.getFileExtension(path));
             tmpFile.toFile().deleteOnExit();
             Files.copy(path, tmpFile, StandardCopyOption.REPLACE_EXISTING);
